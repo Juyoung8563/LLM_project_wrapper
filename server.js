@@ -117,6 +117,7 @@ app.post("/", async (req, res) => {
     // text,
     text: `${text}를 바탕으로 맛집 추천에 어울리는 설명 생성을 위한 200자 이내의 한글 프롬프트를 작성해줘`,
   }).then((res) => res.choices[0].message.content);
+  console.log(prompt2);
   // 3-2. 그거에서 프롬프트만 추출
   // mixtral-8x7b-32768 (groq)
   const promptJSON2 = await callAI({
@@ -127,16 +128,17 @@ app.post("/", async (req, res) => {
     text: `${prompt2}에서 reasoning을 위해 작성된 200자 이내의 한글 프롬프트를 JSON Object로 prompt라는 key로 JSON string으로 ouput해줘`,
     jsonMode: true,
   }).then((res) => JSON.parse(res.choices[0].message.content).prompt);
+  console.log(promptJSON2);
   // 3-3. 그걸로 thinking 사용해서 설명을 작성
   // DeepSeek-R1-Distill-Llama-70B-free (together)
   const desc = await callAI({
     url: `${TOGETHER_BASE_URL}/v1/chat/completions`,
     apiKey: TOGETHER_API_KEY,
     model: DEEPSEEK_MODEL,
-    text: promptJSON2,
+    text: `${promptJSON2}를 기반으로 마크다운 문법 없이 평문으로 작성해주고 한글 결과물을 원하고, 엔터로 줄바꿈을 넣어줘.`,
     max_tokens: 2048,
   }).then((res) => res.choices[0].message.content.split("</think>")[1]);
-
+  console.log(desc);
   //   desc = JSON.stringify(prompt);
   //   console.log(image);
 
